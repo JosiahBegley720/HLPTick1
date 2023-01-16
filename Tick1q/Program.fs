@@ -14,8 +14,8 @@ let fact n =
     else List.reduce (*) [1.0..float n]
 
 let calc_n (n: int) wave =
-    let odds = Seq.where (fun x -> not(isEven x)) [0..n]
-    let evens = Seq.where (fun x -> isEven x) [0..n]
+    let odds = List.where (fun x -> not(isEven x)) [0..n]
+    let evens = List.where (fun x -> isEven x) [0..n]
     if wave = "cos" then evens
     else odds
 
@@ -23,15 +23,15 @@ let cos (x: float) (n: int)=
     let term (n: int) =
         ((-1.0)**(float n/2.0)*(float x**n))/(fact n)
     let list_n = calc_n n "cos"
-    Seq.map term list_n
-    |> Seq.reduce (+)
+    List.map term list_n
+    |> List.fold (+) 0.0
 
 let sin (x: float) (n: int)=
     let term (n: int) =
         ((-1.0)**(float (n-1)/2.0)*(float x**n))/(fact n)
     let list_n = calc_n n "sin"
-    Seq.map term list_n
-    |> Seq.reduce (+)
+    List.map term list_n
+    |> List.fold (+) 0.0
 
 let polarToCartesianApprox (r: float,theta: float) (n:int) = 
     let x = r*(cos theta n)
@@ -73,7 +73,7 @@ let testBenchData: ((float * float) * int * (float * float)) list =
 /// test testFun with testData to see whether actual results are the same as
 /// expected results taken from testData
 let testBench (testData: ((float * float) * int * (float * float)) list) testFun =
-    let closeTo f1 f2 = abs (f1 - f2) < 0.000001
+    let closeTo (f1: float) (f2: float) = abs (f1 - f2) < 0.000001
     let testItem fn (coords, n, (expectedX,expectedY) as expected) =
         let actualX,actualY as actual = testFun coords n
         if not (closeTo actualX expectedX) || not (closeTo actualY expectedY) then
@@ -82,12 +82,12 @@ let testBench (testData: ((float * float) * int * (float * float)) list) testFun
         else
             0
     printfn "Starting tests..."
-    let numErrors = List.sumBy (testItem testFun) testData
+    let numErrors: int = List.sumBy (testItem testFun) testData
     printfn "%d tests Passed %d tests failed." (testData.Length - numErrors) numErrors
 
 [<EntryPoint>]
 let main argv =
-    print <| testBench testBenchData polarToCartesianApprox
+    testBench testBenchData polarToCartesianApprox
     print <| polarToCartesianApprox (1.4142135623, (Math.PI/4.0)) 100
     print <| calc_n 6 "sin"
     print <| sin (Math.PI) 5
