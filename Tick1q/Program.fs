@@ -8,36 +8,24 @@
 // the header given here is correct.
 let print (x: 'a) = printfn "%A" x
 let isEven x = (x % 2) = 0
-let fact n =
-    if n = 0
-    then 1.0
-    else List.reduce (*) [1.0..float n]
+let fact n = if n = 0 then 1.0 else List.reduce (*) [1.0..float n]
 
-let calc_n (n: int) wave =
-    let odds = List.where (fun x -> not(isEven x)) [0..n]
-    let evens = List.where (fun x -> isEven x) [0..n]
-    if wave = "cos" then evens
-    else odds
-
-let cos (x: float) (n: int)=
-    let term (n: int) =
-        ((-1.0)**(float n/2.0)*(float x**n))/(fact n)
-    let list_n = calc_n n "cos"
-    List.map term list_n
+let cos (x: float) (n: int) =
+    [0..n]
+    |> List.filter isEven
+    |> List.map (fun n -> ((-1.0)**(float n/2.0)*(float x**n))/(fact n))
     |> List.fold (+) 0.0
-
-let sin (x: float) (n: int)=
-    let term (n: int) =
-        ((-1.0)**(float (n-1)/2.0)*(float x**n))/(fact n)
-    let list_n = calc_n n "sin"
-    List.map term list_n
+    
+let sin (x: float) (n: int) =
+    [0..n]
+    |> List.filter (fun x -> not(isEven x))
+    |> List.map (fun n -> ((-1.0)**(float (n-1)/2.0)*(float x**n))/(fact n))
     |> List.fold (+) 0.0
 
 let polarToCartesianApprox (r: float,theta: float) (n:int) = 
     let x = r*(cos theta n)
     let y = r*(sin theta n)
     (x,y)
-
 
 //--------------------testbench code - DO NOT CHANGE-----------------------------//
 
@@ -88,9 +76,5 @@ let testBench (testData: ((float * float) * int * (float * float)) list) testFun
 [<EntryPoint>]
 let main argv =
     testBench testBenchData polarToCartesianApprox
-    print <| polarToCartesianApprox (1.4142135623, (Math.PI/4.0)) 100
-    print <| calc_n 6 "sin"
-    print <| sin (Math.PI) 5
-    print <| calc_n 6 "cos"
-    print <| cos (Math.PI) 8 
+    print <| polarToCartesianApprox (1.4142135623, (Math.PI/4.0)) 100 //personal test case
     0 // return an integer exit code
