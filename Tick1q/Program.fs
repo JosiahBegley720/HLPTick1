@@ -6,8 +6,37 @@
 
 /// answer to Tick1
 // the header given here is correct.
-let polarToCartesianApprox (r,theta) n = 
-    failwithf "Tick1 not yet implemented" // replace this line with your top-level implementation
+let print (x: 'a) = printfn "%A" x
+let isEven x = (x % 2) = 0
+let fact n =
+    if n = 0
+    then 1.0
+    else List.reduce (*) [1.0..float n]
+
+let calc_n (n: int) wave =
+    let odds = Seq.where (fun x -> not(isEven x)) [0..n]
+    let evens = Seq.where (fun x -> isEven x) [0..n]
+    if wave = "cos" then evens
+    else odds
+
+let cos (x: float) (n: int)=
+    let term (n: int) =
+        ((-1.0)**(float n/2.0)*(float x**n))/(fact n)
+    let list_n = calc_n n "cos"
+    Seq.map term list_n
+    |> Seq.reduce (+)
+
+let sin (x: float) (n: int)=
+    let term (n: int) =
+        ((-1.0)**(float (n-1)/2.0)*(float x**n))/(fact n)
+    let list_n = calc_n n "sin"
+    Seq.map term list_n
+    |> Seq.reduce (+)
+
+let polarToCartesianApprox (r: float,theta: float) (n:int) = 
+    let x = r*(cos theta n)
+    let y = r*(sin theta n)
+    (x,y)
 
 
 //--------------------testbench code - DO NOT CHANGE-----------------------------//
@@ -18,7 +47,7 @@ let testInputs =
     List.allPairs testPolarCoords [0;1;2;3;10]
 
 /// data showing correct results generated with model answer and given here
-let testBenchData =
+let testBenchData: ((float * float) * int * (float * float)) list =
     [
         ((1.0, 1.0), 0, (1.0, 0.0))       
         ((1.0, 2.0), 0, (1.0, 0.0))        
@@ -43,7 +72,7 @@ let testBenchData =
     ]
 /// test testFun with testData to see whether actual results are the same as
 /// expected results taken from testData
-let testBench testData testFun =
+let testBench (testData: ((float * float) * int * (float * float)) list) testFun =
     let closeTo f1 f2 = abs (f1 - f2) < 0.000001
     let testItem fn (coords, n, (expectedX,expectedY) as expected) =
         let actualX,actualY as actual = testFun coords n
@@ -58,5 +87,10 @@ let testBench testData testFun =
 
 [<EntryPoint>]
 let main argv =
-    testBench testBenchData polarToCartesianApprox
+    print <| testBench testBenchData polarToCartesianApprox
+    print <| polarToCartesianApprox (1.4142135623, (Math.PI/4.0)) 100
+    print <| calc_n 6 "sin"
+    print <| sin (Math.PI) 5
+    print <| calc_n 6 "cos"
+    print <| cos (Math.PI) 8 
     0 // return an integer exit code
